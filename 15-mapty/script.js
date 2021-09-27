@@ -11,12 +11,51 @@ const inputDuration = document.querySelector(".form__input--duration");
 const inputCadence = document.querySelector(".form__input--cadence");
 const inputElevation = document.querySelector(".form__input--elevation");
 
+class Workout {
+  date = new Date();
+  id = (Date.now() + "").slice(-10);
+
+  constructor(distance, duration, coords) {
+    this.distance = distance;
+    this.duration = duration;
+    this.coords = coords;
+  }
+}
+
+class Running extends Workout {
+  constructor(distance, duration, coords, cadence) {
+    super(distance, duration, coords);
+    this.cadence = cadence;
+    this.calcPace();
+  }
+
+  calcPace() {
+    // min/km
+    this.pace = this.duration / this.distance;
+    return this.pace;
+  }
+}
+
+class Cycling extends Workout {
+  constructor(distance, duration, coords, elevationGain) {
+    super(distance, duration, coords);
+    this.elevationGain = elevationGain;
+    this.calcSpeed();
+  }
+
+  calcSpeed() {
+    //km/h
+    this.speed = this.distance / (this.duration / 60);
+    return this.speed;
+  }
+}
+
+//Application architecture
 class App {
   #map;
   #mapEvent;
   constructor() {
     this.workouts = [];
-    this.workOutTypeRunning = true;
     this._getPosition();
     form.addEventListener("submit", this._newWorkOut.bind(this).bind(this));
     inputType.addEventListener("change", this._toggleElevationField);
@@ -32,6 +71,7 @@ class App {
       );
     }
   }
+
   _loadMap(position) {
     const { latitude } = position.coords;
     const { longitude } = position.coords;
@@ -52,15 +92,18 @@ class App {
     //handing clicks on map
     this.#map.on("click", this._showForm.bind(this));
   }
+
   _showForm(mapE) {
     this.#mapEvent = mapE;
     form.classList.remove("hidden");
     inputDistance.focus();
   }
+
   _toggleElevationField() {
     inputElevation.closest(".form__row").classList.toggle("form__row--hidden");
     inputCadence.closest(".form__row").classList.toggle("form__row--hidden");
   }
+
   _newWorkOut(e) {
     e.preventDefault();
 
